@@ -165,6 +165,30 @@ Please use `git submodule update --init --recursive` to ensure that you have cor
 
 For openpi, you should create a virtual env with `uv` and run the server policy. Then, you can evaluate the finetuned openpi on VLABench. Please refer [here](third_party/openpi/examples/vlabench/README.md) for example.
 
+**3. Evaluate Cosmos Policy**
+
+For Cosmos Policy, first launch the policy server with VLABench defaults:
+
+```sh
+python -m cosmos_policy.experiments.robot.vlabench.deploy \
+    --ckpt_path /path/to/checkpoint \
+    --dataset_stats_path /path/to/vlabench_dataset_statistics.json \
+    --t5_text_embeddings_path /path/to/vlabench_t5_embeddings.pkl \
+    --port 8777
+```
+
+If your checkpoint depends on a specific experiment config or planning model, pass the same inference arguments you used elsewhere, for example `--config`, `--planning_model_config_name`, and `--planning_model_ckpt_path`.
+
+Then run VLABench evaluation with the Cosmos Policy client:
+
+```sh
+python scripts/evaluate_policy.py \
+    --policy cosmos_policy \
+    --host localhost \
+    --port 8777 \
+    --eval-track track_1_in_distribution
+```
+
 3. Continously integrate more policies...
 
 ### VLM evaluation

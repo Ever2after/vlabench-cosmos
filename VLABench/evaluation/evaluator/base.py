@@ -18,7 +18,7 @@ class Evaluator:
                  tolerance=1e-2,
                  metrics=["success_rate"],
                  save_dir=None,
-                 visulization=False,
+                 visualization=False,
                  eval_unseen=False,
                  unnorm_key='primitive',
                  **kwargs
@@ -32,7 +32,7 @@ class Evaluator:
             max_substeps: maximum number of substeps for env.step
             metrics: list of metrics to evaluate
             save_dir: directory to save the evaluation results
-            visulization: whether to visualize the evaluation progress as videos
+            visualization: whether to visualize the evaluation progress as videos
             eval_unseen: whether to evaluate the unseen object categories
             unnorm_key: the dataset statistics name of the task suite
         """
@@ -58,7 +58,7 @@ class Evaluator:
         self.save_dir = save_dir
         if self.save_dir is not None:
             os.makedirs(self.save_dir, exist_ok=True)
-        self.visulization = visulization
+        self.visualization = visualization
         with open(os.path.join(os.getenv("VLABENCH_ROOT"), "configs/task_config.json"), "r") as f:
            self.task_configs = json.load(f)
         
@@ -141,7 +141,7 @@ class Evaluator:
             if last_action is None:
                 last_action = np.concatenate([ee_state[:3], quaternion_to_euler(ee_state[3:7])])
             observation["last_action"] = last_action
-            if self.save_dir is not None and self.visulization:
+            if self.save_dir is not None and self.visualization:
                 frames_to_save.append(observation["rgb"])
             if agent.control_mode == "ee":
                 pos, euler, gripper_state = agent.predict(observation, **kwargs)
@@ -175,7 +175,7 @@ class Evaluator:
         info["progress_score"] = progress_score
         
         env.close()
-        if self.save_dir is not None and self.visulization:
+        if self.save_dir is not None and self.visualization:
             os.makedirs(os.path.join(self.save_dir, task_name, "videos"), exist_ok=True)
             self.save_video(frames_to_save, os.path.join(self.save_dir, task_name, "videos", f"{episode_id}_success_{str(success)}_progress_{progress_score:.2f}.mp4"))
         return info
@@ -187,18 +187,23 @@ class Evaluator:
             infos: list of episode information
         """
         metric = {}
+        if not infos:
+            for key in self.target_metrics:
+                metric[key] = 0.0
+            return metric
+
         for key in self.target_metrics:
             if key == "success_rate": # compute the success rate
                 success = [info["success"] for info in infos]
-                sucess_rate = np.mean(success)
+                sucess_rate = float(np.mean(success))
                 metric["success_rate"] = sucess_rate
             elif key == "intention_score":
                 intention_score = [info["intention_score"] for info in infos]
-                avg_intention_score = np.mean(intention_score)
+                avg_intention_score = float(np.mean(intention_score))
                 metric["intention_score"] = avg_intention_score
             elif key == "progress_score":
                 progress_score = [info["progress_score"] for info in infos]
-                avg_progress_score = np.mean(progress_score)
+                avg_progress_score = float(np.mean(progress_score))
                 metric["progress_score"] = avg_progress_score
             else:
                 raise NotImplementedError(f"Metric {key} is not implemented")
