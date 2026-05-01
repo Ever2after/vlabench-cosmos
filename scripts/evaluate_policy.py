@@ -1,12 +1,13 @@
 import os
+
+os.environ["MUJOCO_GL"] = "egl"
+
 import argparse
 import json
 from VLABench.evaluation.evaluator import Evaluator
 from VLABench.evaluation.model.policy.base import RandomPolicy
 from VLABench.tasks import *
 from VLABench.robots import *
-
-os.environ["MUJOCO_GL"]= "egl"
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -58,6 +59,10 @@ def evaluate(args):
             lora_ckpt=args.lora_ckpt,
             norm_config_file=os.path.join(os.getenv("VLABENCH_ROOT"), "configs/model/openvla_config.json") # TODO: re-compuate the norm state by your own dataset
         )
+    elif args.policy.lower() in {"openvla-oft", "openvla_oft"}:
+        from VLABench.evaluation.model.policy.openvla_oft import OpenVLAOFTPolicy
+
+        policy = OpenVLAOFTPolicy(host=args.host, port=args.port, replan_steps=args.replanstep)
     elif args.policy.lower() == "gr00t":
         from VLABench.evaluation.model.policy.gr00t import Gr00tPolicy
         policy = Gr00tPolicy(host=args.host, port=args.port, replan_steps=args.replanstep)
