@@ -1,6 +1,8 @@
 import os
+import sys
 
-os.environ["MUJOCO_GL"] = "egl"
+if "MUJOCO_GL" not in os.environ:
+    os.environ["MUJOCO_GL"] = "glfw" if sys.platform == "darwin" else "egl"
 
 import argparse
 import json
@@ -14,6 +16,7 @@ def get_args():
     parser.add_argument('--tasks', nargs='+', default=None, help="Specific tasks to run, work when eval-track is None")
     parser.add_argument('--eval-track', default=None, type=str, choices=["track_1_in_distribution", "track_2_cross_category", "track_3_common_sense", "track_4_semantic_instruction", "track_6_unseen_texture"], help="The evaluation track to run")
     parser.add_argument('--n-episode', default=1, type=int, help="The number of episodes to evaluate for a task")
+    parser.add_argument('--max-episode-length', default=None, type=int, help="Override the maximum number of policy steps per episode")
     parser.add_argument('--policy', default="openvla", help="The policy to evaluate")
     parser.add_argument('--model_ckpt', default="/remote-home1/sdzhang/huggingface/openvla-7b", help="The base model checkpoint path")
     parser.add_argument('--lora_ckpt', default="/remote-home1/pjliu/openvla/weights/vlabench/select_fruit+CSv1+lora/", help="The lora checkpoint path")
@@ -46,6 +49,7 @@ def evaluate(args):
         tasks=tasks,
         n_episodes=args.n_episode,
         episode_config=episode_config,
+        max_episode_length=args.max_episode_length,
         max_substeps=1, # repeat step in simulation
         save_dir=run_save_dir,
         visualization=args.visualization,

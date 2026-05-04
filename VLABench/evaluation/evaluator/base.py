@@ -49,6 +49,7 @@ class Evaluator:
         self.n_episodes = n_episodes 
         
         self.max_substeps = max_substeps
+        self.max_episode_length = kwargs.get("max_episode_length")
         self.tolerance = tolerance
         self.target_metrics = metrics
         self.intention_score_threshold = kwargs.get("intention_score_threshold", 0.1)
@@ -69,10 +70,11 @@ class Evaluator:
         metrics = {}
         for task in self.eval_tasks:
             task_infos = []
-            max_episode_length = 200
-            if self.task_configs.get(find_key_by_value(name2config, task), None):
-                if self.task_configs[find_key_by_value(name2config, task)].get("evaluation", {}).get("max_episode_length", None):
-                    max_episode_length = self.task_configs[find_key_by_value(name2config, task)]["evaluation"]["max_episode_length"]
+            max_episode_length = self.max_episode_length or 200
+            task_config_key = find_key_by_value(name2config, task)
+            if self.max_episode_length is None and self.task_configs.get(task_config_key, None):
+                if self.task_configs[task_config_key].get("evaluation", {}).get("max_episode_length", None):
+                    max_episode_length = self.task_configs[task_config_key]["evaluation"]["max_episode_length"]
                 
             for i in tqdm(range(self.n_episodes), desc=f"Evaluating {task} of {agent.name}"):
                 agent.reset()
