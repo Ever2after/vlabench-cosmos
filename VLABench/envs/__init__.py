@@ -1,5 +1,7 @@
 import os
 import json
+import VLABench.robots  # noqa: F401
+import VLABench.tasks  # noqa: F401
 from VLABench.utils.register import register
 from VLABench.envs.dm_env import LM4ManipDMEnv
 from VLABench.configs import name2config

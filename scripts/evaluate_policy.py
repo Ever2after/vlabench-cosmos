@@ -73,6 +73,10 @@ def evaluate(args):
         from VLABench.evaluation.model.policy.cosmos_policy import CosmosPolicy
 
         policy = CosmosPolicy(host=args.host, port=args.port, replan_steps=args.replanstep)
+    elif args.policy.lower() in {"mimic-video", "mimic_video", "vam"}:
+        from VLABench.evaluation.model.policy.mimic_video import MimicVideoPolicy
+
+        policy = MimicVideoPolicy(host=args.host, port=args.port, replan_steps=args.replanstep)
     else:
         policy = RandomPolicy(None)
 
